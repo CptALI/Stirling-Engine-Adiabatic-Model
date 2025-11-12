@@ -14,18 +14,18 @@ cycles = 50;
 
 % Known Quantities 
 WF = 'Air'; % Working fluid 
-T_h = 265 + Kelvin; % Heater Temperature
+T_h = 75 + Kelvin; % Heater Temperature
 T_k = 10 + Kelvin; % Cooler Temperature 
 T_r = (T_h-T_k)/log(T_h/T_k); % Regenerator temperature 
-V_k = 8.8e-5; %Cooler Volume 
-V_h = 8.8e-5; %Heater Volume 
-V_r = 2e-5; % Regenerator Volume, an assumption at this point
+V_k = 8.8e-4; %Cooler Volume 
+V_h = 8.8e-4; %Heater Volume 
+V_r = 2e-4; % Regenerator Volume, an assumption at this point
 Freq = 1.67; % Cycle frequency 
-EX_A = 0.00246301; % Expander Piston Area
+EX_A = 0.00246301*10; % Expander Piston Area
 EX_L = 0.54; %Expnader Swept Length 
 %EX_AMAX = 50; %Expander maximum acceleration % Not used 
 EX_DEAD = EX_A*0.02;
-CO_A =  0.00197213; % Compressor Piston Area % Symmetric assumption
+CO_A =  0.00197213*10; % Compressor Piston Area % Symmetric assumption
 CO_L = EX_A*EX_L/CO_A; % Compressor Length 
 CO_DEAD = CO_A*0.02;
 
@@ -45,7 +45,7 @@ Loop_char = [T_k,T_h];
 
 % Time spans 
 T = (1/Freq)*0.8;
-epsilon = T*0.25*0.01;
+epsilon = 0;% T*0.25*0.01;
 t_array = zeros(cycles*5,resolution);
 for i = 1:cycles  
     cycle_time = (i-1)*(1/Freq);
@@ -72,10 +72,10 @@ t_result = cell(cycles,5);
 
 %% Differential Equations 
 % using a nested loop to cycle through 5 states and different cycles 
-
+nloop = 0
 for i = 1:cycles % cycles loop 
     for j = 1:5 % Processes loop
-       [t_result{i,j},Y_result{i,j}] = ode113(@(t1,Y1)AdiabaticDiff(t1,Y1,Physical_char,Loop_char,WF), ...
+       [t_result{i,j},Y_result{i,j}] = ode113(@(t1,Y1)AdiabaticDiff(t1,Y1,Physical_char,Loop_char,WF,nloop), ...
            t_array((i-1)*5+j,:),inits((i-1)*5+j,:));
        if j<5
            inits((i-1)*5+j+1,:) = Y_result{i,j}(end,:);
@@ -84,6 +84,7 @@ for i = 1:cycles % cycles loop
     if i<cycles
         inits(i*5+1,:) = Y_result{i,5}(end,:);
     end
+    nloop = nloop + 1;
 end
 
 %% Data Plotting 

@@ -5,7 +5,7 @@
 % 1 :Ideal gas assumption 
 % 2: The pressure is uniform 
 
-function dpdt = AdiabaticDiff(t,Y,Physical_char,Loop_char,WF)
+function dpdt = AdiabaticDiff(t,Y,Physical_char,Loop_char,WF,nloop)
 
 % Variables
 
@@ -32,7 +32,7 @@ V_r = Physical_char(1,8); % Regen Volume
 
 CO_char = [A_CO,L_CO,V_CO_DEAD];
 EX_char = [A_CO,L_CO,V_CO_DEAD];
-
+tloop   = t - nloop/Freq;
 % Thermal Loop Characteristics
 T_k = Loop_char(1,1); %Heater temperature
 T_h = Loop_char(1,2); %Cooler temperature
@@ -45,19 +45,19 @@ gamma = Cp/Cv;
 R_1 = 8.314;%py.CoolProp.CoolProp.PropsSI('gas_constant', WF);
 Molar = 2.896546000000000e-02;%py.CoolProp.CoolProp.PropsSI('M', WF);
 R = R_1/Molar;
-DV_c = Vel_CO(Freq,CO_char,t)*A_CO;
-DV_e = Vel_EX(Freq,EX_char,t)*A_CO;
-V_c  = V_CO(Freq,CO_char,t);
-V_e = V_EX(Freq,EX_char,t);
+DV_c = Vel_CO(Freq,CO_char,tloop)*A_CO;
+DV_e = Vel_EX(Freq,EX_char,tloop)*A_CO;
+V_c  = V_CO(Freq,CO_char,tloop);
+V_e = V_EX(Freq,EX_char,tloop);
 m_k = p*V_k/(R*T_k);
 m_r = p*V_r/(R*T_r);
 m_h = p*V_h/(R*T_h);
 m_e = M-(m_c+m_k+m_h+m_r);
 T_c = p*V_c/(R*m_c);
-T_e = p*V_e/(R*m_e);
+T_e = p*V_e/(R*m_e)
 
 
-check = Vel_CO(Freq,CO_char,t)<=0;
+check = Vel_CO(Freq,CO_char,tloop)<=0;
 T_ck = check*T_c + (1-check)*T_k;
 %if Vel_CO(Freq,CO_char,t)<=0
   %  T_ck = T_c;
@@ -65,7 +65,7 @@ T_ck = check*T_c + (1-check)*T_k;
  %   T_ck = T_k;
 %end
 
-check = Vel_EX(Freq,EX_char,t)>=0;
+check = Vel_EX(Freq,EX_char,tloop)>=0;
 T_he = check*T_h + (1-check)*T_e;
 % if Vel_EX(Freq,EX_char,t)>=0
 %     T_he = T_h;
